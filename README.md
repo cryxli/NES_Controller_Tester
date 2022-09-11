@@ -1,7 +1,8 @@
 # NES Controller Tester
 
-    When fixing and refurbishing S/NES controllers, I need a way to quickly test the buttons. Games are usually not that useful, since you have to start something before you can test all buttons. To save me fiddling with potentially buggy consoles, I desinged my own tester.
-    - cryxli, August 2022
+ > When fixing and refurbishing S/NES controllers, I need a way to quickly test the buttons. Games are usually not that useful, since you have to start something before you can test all buttons. To save me fiddling with potentially buggy consoles, I desinged my own tester.
+>
+> ~ cryxli, August 2022
 
 TODO add image of finished project
 

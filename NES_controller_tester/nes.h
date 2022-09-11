@@ -1,4 +1,15 @@
+// -------------------------------------------------
+// NES Controller Tester
+// by cryxli, August 2022
+// 
+// Based on a Heltec Wifi Kit 32 with a 128x64 pixel
+// OLED display.
+//
+// This file contains the bitmaps for the NES
+// controller layout including pressed buttons.
+// -------------------------------------------------
 
+// empty controller layout
 #define NES_Layout_width 128
 #define NES_Layout_height 53
 
@@ -58,6 +69,7 @@ const unsigned char NES_Layout_bits[] PROGMEM = {
     0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
 };
 
+// LEFT button pressed
 #define NES_left_width 16
 #define NES_left_height 7
 
@@ -71,6 +83,7 @@ const unsigned char NES_left_bits[] PROGMEM = {
     0xFC,0x0F
 };
 
+// RIGHT button pressed
 #define NES_right_width 16
 #define NES_right_height 7
 
@@ -84,6 +97,7 @@ const unsigned char NES_right_bits[] PROGMEM = {
     0xF0, 0x3F,
 };
 
+// UP button pressed
 #define NES_up_width 8
 #define NES_up_height 13
 
@@ -103,6 +117,7 @@ const unsigned char NES_up_bits[] PROGMEM = {
     0x08
 };
 
+// DOWN button pressed
 #define NES_down_width 8
 #define NES_down_height 13
 
@@ -122,6 +137,7 @@ const unsigned char NES_down_bits[] PROGMEM = {
     0x7F
 };
 
+// A or B button pressed
 #define NES_a_width 16
 #define NES_a_height 14
 

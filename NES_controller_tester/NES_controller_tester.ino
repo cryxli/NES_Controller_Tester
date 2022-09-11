@@ -1,25 +1,35 @@
-
+// -------------------------------------------------
+// NES Controller Tester
+// by cryxli, August 2022
+// 
+// Based on a Heltec Wifi Kit 32 with a 128x64 pixel
+// OLED display.
+//
+// This version only covers the NES controller. (To
+// read buttons of a SNES controller, 6 more button
+// states must be read in the main loop.)
+// -------------------------------------------------
 #include "Arduino.h"
 #include "heltec.h"
 
+// include our bitmaps for the controller layout and buttons
 #include "nes.h"
 
-#define BAND    868E6  //you can set band here directly,e.g. 868E6,915E6
-
-#define BAUD 74880
-
-// 5V red
-// GND black
-#define DATA 17 // yellow
-#define LATCH 5 // blue
+// pins for communication with controller
+//      5V          red
+//      GND         black
+#define DATA  17 // yellow
+#define LATCH  5 // blue
 #define CLOCK 18 // green
 
+// define some delays [ms]
 #define LATCH_DELAY 5
 #define PULSE_DELAY 1
 #define CLOCK_DELAY 5
 #define DATA_DELAY 5
 #define LOOP_DELAY 20
 
+// bitmap masks for the NES buttons
 #define NES_A      0b10000000
 #define NES_B      0b01000000
 #define NES_SELECT 0b00100000
@@ -29,23 +39,31 @@
 #define NES_LEFT   0b00000010
 #define NES_RIGHT  0b00000001
 
-void setup() {    
+// you can set LoRa band directly, e.g. 868E6,915E6
+#define BAND 868E6 
+
+void setup() {
+    // define pins
     pinMode(DATA, INPUT);
     pinMode(LATCH, OUTPUT);
     pinMode(CLOCK, OUTPUT);
-
+    // set default state
     digitalWrite(LATCH, LOW);
     digitalWrite(CLOCK, HIGH);
 
+    // init OLED etc.
     Heltec.begin(
-        true /*DisplayEnable Enable*/, 
-        false /*LoRa Enable*/, 
-        true /*Serial Enable*/, 
-        false /*LoRa use PABOOST*/, 
-        BAND /*LoRa RF working band*/
+        true  /* DisplayEnable Enable*/, 
+        false /* LoRa Enable         */, 
+        true  /* Serial Enable       */, 
+        false /* LoRa use PABOOST    */, 
+        BAND  /* LoRa RF working band*/
     );
 }
 
+/**
+ * Quickly change the state of an output pin, then revert to stand-by.
+ */
 void pulseWire(int wire, bool pulse) {
     if (pulse == 1) {
         digitalWrite(wire, HIGH);
@@ -59,19 +77,23 @@ void pulseWire(int wire, bool pulse) {
 }
 
 void loop() {
+    // have controller read button states
     pulseWire(LATCH, 1);
     delay(DATA_DELAY);
 
-    // A B SELECT START UP DOWN LEFT RIGHT
+    // (NES only)
+    // read buttons: A, B, SELECT, START, UP, DOWN, LEFT, RIGHT
     int buttons = 0b00000000;
     for(int index = 0b10000000; index > 0; index = index >> 1) {
         buttons = (buttons << 1) + 1 - digitalRead(DATA);
         pulseWire(CLOCK, 0);
         delay(DATA_DELAY);
     }
-    //Serial.print("Buttons: ");
-    //Serial.println(buttons);
+    // for debugging
+    // Serial.print("Buttons: ");
+    // Serial.println(buttons);
 
+    // display the result
     if (buttons == 0b11111111) {
         displayNoControllerConnected();
     } else {
@@ -81,16 +103,28 @@ void loop() {
     delay(LOOP_DELAY);
 }
 
+/**
+ * "All" buttons are pressed, therefore no controller is connected. Show a
+ * hint to connect a controller.
+ */
 void displayNoControllerConnected() {
+    // reset display buffer
     Heltec.display -> clear();
+    // draw the empty controller layout
     Heltec.display -> drawXbm(0, 0, NES_Layout_width, NES_Layout_height, NES_Layout_bits);
+    // show hint
     Heltec.display -> drawString(10, 3, "Connect a controller...");
+    // update display
     Heltec.display -> display();
 }
 
+/**
+ * Graphically show which buttons are pressed
+ */
 void displayButtons(int buttons) {
-    // display pressed buttons
+    // display pressed buttons; reset display buffer
     Heltec.display -> clear();
+    // draw the empty controller layout
     Heltec.display -> drawXbm(0, 0, NES_Layout_width, NES_Layout_height, NES_Layout_bits);
     if ((buttons & NES_UP) > 0) {
         Heltec.display -> drawXbm(17, 17, NES_up_width, NES_up_height, NES_up_bits);
@@ -116,5 +150,6 @@ void displayButtons(int buttons) {
     if ((buttons & NES_A) > 0) {    
         Heltec.display -> drawXbm(109, 33, NES_a_width, NES_a_height, NES_a_bits);
     }
+    // done, update display
     Heltec.display -> display();
 }
