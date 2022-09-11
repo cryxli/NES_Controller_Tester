@@ -115,6 +115,8 @@ For the NES socket to fit in the 3d printed box, we have to cut off its studs at
 
 The design will hold it in place with the side tags only.
 
+I use [OpenSCAD](https://openscad.org). Not only is it free, it also suits my way of designing best.
+
 ![Enclosure](scad/NES_Controller_Tester_Box.png)
 
 The lid is designed to register with the body. There should be less than 1/2 mm play with every component.
