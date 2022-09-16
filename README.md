@@ -15,7 +15,7 @@ You do not have to go the extra mile to make the project modular. By doing so yo
 - ``/doc`` - Contains files for the documentation.
 - ``/NES_controller_tester`` - Contains the [Arduino](https://www.arduino.cc) source code. Open this folder in the IDE.
 - ``/pcb`` - Contains the [Sprint Layout 6](https://www.electronic-software-shop.com/lng/en/electronic-software/sprint-layout-60.html?language=en) design of the base plate.
-- ``/scad`` - Contains the OpenScad design for the enclosure.
+- ``/scad`` - Contains the [OpenSCAD](https://openscad.org) design for the enclosure.
 
 ### Parts
 
@@ -123,4 +123,8 @@ The lid is designed to register with the body. There should be less than 1/2 mm 
 
 The box has holes for M3 bolts to hold it closed, but the friction fit of the interlocking lid is usually enough.
 
-TODO Add image of assembled project with open lid.
+![Assembly Base](doc/assembly_base.jpg)
+
+![Assembly Kit](doc/assembly_kit.jpg)
+
+Pay extra attention to the OLED display when closing the lid! The top glass layer is very thin and breaks easily. 
