@@ -4,9 +4,9 @@
 // -------------------------------------------------
 
 base_plate = 2;     // [mm] How strong to make the bottom of the box
-depth = 25;         // [mm] How far the socket raches into the box
+depth = 25;         // [mm] How far the socket reaches into the box
 height = 17;        // [mm] Height of the socket
-oled_width = 19.5;  // [mm] Height of the OLED display
+oled_width = 19.5;  // [mm] Width of the OLED display
 oled_length = 33.5; // [mm] Length of the OLED display
 $fn = 18;           // [faces] Make circles 18 sided polys
 

@@ -4,7 +4,7 @@
 >
 > ~ cryxli, August 2022
 
-TODO add image of finished project
+TODO add image of finished project working
 
 ## Project Overview
 
@@ -47,13 +47,13 @@ NES and SNES controllers work exactly the same. Because both are keyed (they are
 - ``YELLOW`` := Data (active low)
 - ``WHITE`` := unused by standard controllers
 
-"Active low" means a locigal 1 is represented by 0V. While with "active high" a logical 1 would be represented by about 3V.
+"Active low" means a locigal ``1`` is represented by 0V. While with "active high" a logical ``1`` would be represented by about 3V or above.
 
 ## Protocol
 
-The S/NES controllers use a serial protocol to transmite the state of the buttons to the console. That means a Shift Register reads the state of the buttons and then sends them one by one over the DATA line to the console.
+The S/NES controllers use a serial protocol to transmit the state of the buttons to the console. That means a [Shift Register (PISO)](https://en.wikipedia.org/wiki/Shift_register#Parallel-in_serial-out_(PISO)) reads the state of the buttons and then sends them one by one over the DATA line to the console.
 
-For that to happen the console must tell the controller to read the button states by LATCH high.
+For that to happen the console must tell the controller to read the button states by setting LATCH high.
 
 With every pulse of the CLOCK to low the next button state is set on the DATA line.
 
@@ -61,7 +61,7 @@ A button is pressed <=> Corresponding DATA is low.
 
 ## Shift Registers
 
-The NES controller has only one 8-bit shift register for its 8 buttons. The SNES controllers have 12 buttons and use two 8-bit shift registers chained together.
+The NES controllers have only one 8-bit shift register for their 8 buttons. The SNES controllers have 12 buttons and use two 8-bit shift registers chained together. 
 
 The order in which the button states are transmitted differs
 
@@ -70,13 +70,13 @@ The order in which the button states are transmitted differs
 | NES        | A   | B   | Select | Start | Up  | Down | Left | Right | -   | -   | -   | -   |
 | SNES       | B   | Y   | Select | Start | Up  | Down | Left | Right | A   | X   | L   | R   |
 
-Shift registers don't care how many times they are pulsed (CLOCK) to send the next bit. As long as they have data, they will answer before they default to zeros.
+[Shift registers](https://en.wikipedia.org/wiki/Shift_register) don't care how many times they are pulsed (CLOCK) to send the next bit. As long as they have data, they will answer before they eventually default to zeros.
 
-Therefore, it should be possible to read both types of controller with the same pice of code that asks them for 16 bits of data.
+Therefore, it should be possible to read both types of controller with the same piece of code that asks them for 16 bits of data.
 
 ## Display
 
-ESP8266 and later ESPs are overkill for reading S/NES controllers, but they constantly evolve. [Heltec Automation](https://heltec.org/) resently created a Devkit combined with an 128x64 pixel OLED display.
+[ESP8266](https://www.espressif.com/en/products/socs/esp8266) and later ESPs are overkill for reading S/NES controllers, but they constantly evolve. [Heltec Automation](https://heltec.org/) resently created a Devkit combined with an 128x64 pixel OLED display.
 
 ![Hiltec](doc/heltec_Wifi_Kit_32.png)
 
@@ -92,8 +92,14 @@ Most ESPs don't like it when you apply more than 3.3V on their input pins. To av
 
 The colored pins correspond to the colors used in the controller pinout, above. 
 
-- ``GREEN`` Vin 5V input voltage
-- ``GRAY`` GND for input voltage and connector circuit
+- ``GREEN`` = ``5V`` := Vin input voltage
+- ``GRAY`` = ``GND`` := Ground or 0V reference for input voltage and connector circuit
+- ``BLUE`` = ``18`` := Clock
+- ``ORANGE`` = ``5`` := Latch
+- ``YELLOW`` = ``17`` := Data
+- ``RED`` = ``3V3`` := regulated 3.3V
+
+The pins on the ESP board are not numbered like the legs of an IC. Look at a [pinout diagram](https://resource.heltec.cn/download/WiFi_Kit_32/WIFI_Kit_32_pinoutDiagram_V2.pdf) or the PCB, below.
 
 ## PCB
 
@@ -105,7 +111,13 @@ I also turned the design 180° to match the layout of the images above.
 
 The idea is to have a 90° pin header expose the 5 connections for the controller and a 3 pin header for the power supply.
 
-Whenever I cut off a USB lead and turn it into a 5V power supply for my projects, I add a 3 pin Dupond connector with center negative. By adding a link between the outer pins on the project/board, I do not have to worry about polarisation anymore. This comes from a time when I only used [Dupont](https://www.google.com/search?q=Dupont+connector) connectors that were not keyed.
+### 5V via USB
+
+Whenever I cut off a USB lead and turn it into a 5V power supply for my projects, I add a 3 pin Dupond connector with center negative. By adding a link between the outer pins on the project/board, I do not have to worry about polarity anymore. 
+
+![5V USB](doc/USB.jpg)
+
+This comes from a time when I only used [Dupont](https://www.google.com/search?q=Dupont+connector) connectors that were *not* keyed.
 
 ## Enclosure
 
@@ -128,3 +140,14 @@ The box has holes for M3 bolts to hold it closed, but the friction fit of the in
 ![Assembly Kit](doc/assembly_kit.jpg)
 
 Pay extra attention to the OLED display when closing the lid! The top glass layer is very thin and breaks easily. 
+
+# Resources
+
+Some helpful links:
+
+- [Wifi Kit 32](https://heltec.org/project/wifi-kit-32/)
+  - [Pinout](https://resource.heltec.cn/download/WiFi_Kit_32/WIFI_Kit_32_pinoutDiagram_V2.pdf)
+- [Sprint Layout 6](https://www.electronic-software-shop.com/lng/en/electronic-software/sprint-layout-60.html?language=en)
+  - [Viewer](https://www.electronic-software-shop.com/support/kostenlose-datei-viewer/)
+- [OpenSCAD](https://openscad.org)
+  - [User Manual](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual)
