@@ -4,7 +4,9 @@
 >
 > ~ cryxli, August 2022
 
-TODO add image of finished project working
+![Running](doc/running.jpg)
+
+Finished project showing some pressed buttons, powered by a USB power bank, held together with string.
 
 ## Project Overview
 
