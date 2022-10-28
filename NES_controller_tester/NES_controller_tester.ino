@@ -1,19 +1,18 @@
 // -------------------------------------------------
-// NES Controller Tester
+// NES Controller Tester, v2.0
 // by cryxli, August 2022
 // 
 // Based on a Heltec Wifi Kit 32 with a 128x64 pixel
 // OLED display.
 //
-// This version only covers the NES controller. (To
-// read buttons of a SNES controller, 6 more button
-// states must be read in the main loop.)
+// This version supports NES and SNES controllers.
 // -------------------------------------------------
 #include "Arduino.h"
 #include "heltec.h"
 
 // include our bitmaps for the controller layout and buttons
 #include "nes.h"
+#include "snes.h"
 
 // pins for communication with controller
 //      5V          red
@@ -30,14 +29,28 @@
 #define LOOP_DELAY 20
 
 // bitmap masks for the NES buttons
-#define NES_A      0b10000000
-#define NES_B      0b01000000
-#define NES_SELECT 0b00100000
-#define NES_START  0b00010000
-#define NES_UP     0b00001000
-#define NES_DOWN   0b00000100
-#define NES_LEFT   0b00000010
-#define NES_RIGHT  0b00000001
+#define NES_A      1<<7
+#define NES_B      1<<6
+#define NES_SELECT 1<<5
+#define NES_START  1<<4
+#define NES_UP     1<<3
+#define NES_DOWN   1<<2
+#define NES_LEFT   1<<1
+#define NES_RIGHT  1<<0
+
+// bitmap masks for the SNES buttons
+#define SNES_B      1<<11
+#define SNES_Y      1<<10
+#define SNES_SELECT 1<<9
+#define SNES_START  1<<8
+#define SNES_UP     1<<7
+#define SNES_DOWN   1<<6
+#define SNES_LEFT   1<<5
+#define SNES_RIGHT  1<<4
+#define SNES_A      1<<3
+#define SNES_X      1<<2
+#define SNES_L      1<<1
+#define SNES_R      1<<0
 
 // you can set LoRa band directly, e.g. 868E6,915E6
 #define BAND 868E6 
@@ -81,10 +94,10 @@ void loop() {
     pulseWire(LATCH, 1);
     delay(DATA_DELAY);
 
-    // (NES only)
-    // read buttons: A, B, SELECT, START, UP, DOWN, LEFT, RIGHT
-    int buttons = 0b00000000;
-    for(int index = 0b10000000; index > 0; index = index >> 1) {
+    //  NES buttons: A, B, SELECT, START, UP, DOWN, LEFT, RIGHT
+    // SNES buttons: B, Y, SELECT, START, UP, DOWN, LEFT, RIGHT, A, X, L, R
+    int buttons = 0;
+    for(int index = 1<<15; index > 0; index = index >> 1) {
         buttons = (buttons << 1) + 1 - digitalRead(DATA);
         pulseWire(CLOCK, 0);
         delay(DATA_DELAY);
@@ -94,10 +107,12 @@ void loop() {
     // Serial.println(buttons);
 
     // display the result
-    if (buttons == 0b11111111) {
+    if (buttons & 15 > 0) {
         displayNoControllerConnected();
+    } else if (buttons & 255 > 0) {
+        displayNesButtons(buttons>>8);
     } else {
-        displayButtons(buttons);
+        displaySnesButtons(buttons>>4);
     }
 
     delay(LOOP_DELAY);
@@ -111,43 +126,101 @@ void displayNoControllerConnected() {
     // reset display buffer
     Heltec.display -> clear();
     // draw the empty controller layout
-    Heltec.display -> drawXbm(0, 0, NES_Layout_width, NES_Layout_height, NES_Layout_bits);
+//    Heltec.display -> drawXbm(0, 0, NES_Layout_width, NES_Layout_height, NES_Layout_bits);
     // show hint
-    Heltec.display -> drawString(10, 3, "Connect a controller...");
+    Heltec.display -> drawString(10, 5, "Connect a controller...");
+
+    Heltec.display -> drawString(10, 25, "Support for NES and");
+    Heltec.display -> drawString(10, 35, "SNES controllers.");
+
+    Heltec.display -> drawString(10, 50, "v2.0");
+    Heltec.display -> drawString(80, 50, "by cryxli");
+    
     // update display
     Heltec.display -> display();
 }
 
 /**
- * Graphically show which buttons are pressed
+ * Graphically show which NES buttons are pressed
  */
-void displayButtons(int buttons) {
+void displaySnesButtons(int buttons) {
+    // display pressed buttons; reset display buffer
+    Heltec.display -> clear();
+    // draw the empty controller layout
+    Heltec.display -> drawXbm(0, 0, SNES_Layout_width, SNES_Layout_height, SNES_Layout_bits);
+
+    // highlight pressed buttons
+    if ((buttons & SNES_UP) > 0) {
+        Heltec.display -> drawXbm(17, 17, NES_up_width, NES_up_height, NES_up_bits);
+    }
+    if ((buttons & SNES_LEFT) > 0) {
+        Heltec.display -> drawXbm(3, 29, NES_left_width, NES_left_height, NES_left_bits);
+    }
+    if ((buttons & SNES_RIGHT) > 0) {
+        Heltec.display -> drawXbm(22, 29, NES_right_width, NES_right_height, NES_right_bits);
+    }
+    if ((buttons & SNES_DOWN) > 0) {
+        Heltec.display -> drawXbm(17, 35, NES_down_width, NES_down_height, NES_down_bits);
+    }
+    if ((buttons & SNES_SELECT) > 0) {
+        Heltec.display -> fillRect(44, 37, 16, 6);
+    }
+    if ((buttons & SNES_START) > 0) {
+        Heltec.display -> fillRect(66, 37, 16, 6);
+    }
+    if ((buttons & SNES_L) > 0) {
+        Heltec.display -> fillRect(0, 0, 12, 6);
+    }
+    if ((buttons & SNES_R) > 0) {
+        Heltec.display -> fillRect(116, 0, 12, 6);
+    }
+    if ((buttons & SNES_Y) > 0) {
+        Heltec.display -> fillRect(89, 27, 9, 9);
+    }
+    if ((buttons & SNES_X) > 0) {
+        Heltec.display -> fillRect(101, 15, 9, 9);
+    }
+    if ((buttons & SNES_B) > 0) {
+        Heltec.display -> fillRect(101, 39, 9, 9);
+    }
+    if ((buttons & SNES_A) > 0) {
+        Heltec.display -> fillRect(113, 27, 9, 9);
+    }
+    // done, update display
+    Heltec.display -> display();
+}
+
+/**
+ * Graphically show which SNES buttons are pressed
+ */
+void displayNesButtons(int buttons) {
     // display pressed buttons; reset display buffer
     Heltec.display -> clear();
     // draw the empty controller layout
     Heltec.display -> drawXbm(0, 0, NES_Layout_width, NES_Layout_height, NES_Layout_bits);
+    // highlight pressed buttons
     if ((buttons & NES_UP) > 0) {
         Heltec.display -> drawXbm(17, 17, NES_up_width, NES_up_height, NES_up_bits);
     }
-    if ((buttons & NES_LEFT) > 0) {    
+    if ((buttons & NES_LEFT) > 0) {
         Heltec.display -> drawXbm(3, 29, NES_left_width, NES_left_height, NES_left_bits);
     }
-    if ((buttons & NES_RIGHT) > 0) {    
+    if ((buttons & NES_RIGHT) > 0) {
         Heltec.display -> drawXbm(22, 29, NES_right_width, NES_right_height, NES_right_bits);
     }
-    if ((buttons & NES_DOWN) > 0) {    
+    if ((buttons & NES_DOWN) > 0) {
         Heltec.display -> drawXbm(17, 35, NES_down_width, NES_down_height, NES_down_bits);
     }
-    if ((buttons & NES_SELECT) > 0) {    
+    if ((buttons & NES_SELECT) > 0) {
         Heltec.display -> fillRect(44, 37, 16, 6);
     }
-    if ((buttons & NES_START) > 0) {    
+    if ((buttons & NES_START) > 0) {
         Heltec.display -> fillRect(66, 37, 16, 6);
     }
-    if ((buttons & NES_B) > 0) {    
+    if ((buttons & NES_B) > 0) {
         Heltec.display -> drawXbm(89, 33, NES_a_width, NES_a_height, NES_a_bits);
     }
-    if ((buttons & NES_A) > 0) {    
+    if ((buttons & NES_A) > 0) {
         Heltec.display -> drawXbm(109, 33, NES_a_width, NES_a_height, NES_a_bits);
     }
     // done, update display
